@@ -1,6 +1,26 @@
+#ideas
+
+
+# 2 branch a midpoint noot crystals
+# 3 if eggs closeby add them to targets
+# 4 find all distances during initiation
+# 5 find x,y of all cells
+# set egg range based on ratio of eggs to crystals
+# work out how to minimise time to 51% crystals
+
+
+
 import sys
 
-
+# Python code to sort the tuples using second element
+# of sublist Inplace way to sort using sort()
+def Sort(sub_li):
+ 
+    # reverse = None (Sorts in Ascending order)
+    # key is set to sort using second element of
+    # sublist lambda has been used
+    sub_li.sort(key = lambda x: x[1])
+    return sub_li
 
 class Cell(object):
     index: int
@@ -35,12 +55,47 @@ def richest_cell(cells,cell_type):
             richest = i
     return richest
 
+def cells_in_order(cells,type):
+    crystal_cells = []
+    for cell in cells:
+        for b in my_bases:
+            if cell.cell_type == type and cell.resources > 0 :
+                dist = distance(cells[b],cell)
+                crystal_cells.append([cell.index,dist,b])
+
+    return Sort(crystal_cells)
+
 def add_xy(ref: int,dir : int ,result: int):
-    pass
+    # set x and y values. x is distance in 0 direction. y is distance in 1 direction
+    
+    # not working during inititation as no guarentee cells are shown in order
+    if neigh_0 != -1:
+        cells[neigh_0].x = cells[i].x + 1
+        cells[neigh_0].y = cells[i].y
+    
+    if neigh_1 != -1:
+        cells[neigh_1].x = cells[i].x
+        cells[neigh_1].y = cells[i].y + 1
+    
+    if neigh_2 != -1:
+        cells[neigh_2].x = cells[i].x - 1
+        cells[neigh_2].y = cells[i].y + 1
+    
+    if neigh_3 != -1:
+        cells[neigh_3].x = cells[i].x - 1
+        cells[neigh_3].y = cells[i].y
+
+    if neigh_4 != -1:
+        cells[neigh_4].x = cells[i].x 
+        cells[neigh_4].y = cells[i].y -1
+    
+    if neigh_5 != -1:
+        cells[neigh_5].x = cells[i].x + 1
+        cells[neigh_5].y = cells[i].y - 1
             
 
 def distance(cellA,cellB):
-    print(cellB.index, file=sys.stderr, flush=True)
+    #print(cellB.index, file=sys.stderr, flush=True)
     path : list[path_node]=[]
     possibles : list[int]=[]
     n=0
@@ -49,12 +104,12 @@ def distance(cellA,cellB):
     found_path = 0
     while not found_path:
         for node in path:
-            print(cells[node.cell].neighbors, file=sys.stderr, flush=True)
+            #print(cells[node.cell].neighbors, file=sys.stderr, flush=True)
             if found_path: break
             for neighbor in cells[node.cell].neighbors:
-                print(neighbor, file=sys.stderr, flush=True)
+                #print(neighbor, file=sys.stderr, flush=True)
                 if neighbor == cellB.index:
-                    print("break at " + str(n), file=sys.stderr, flush=True)
+                    #print("break at " + str(n), file=sys.stderr, flush=True)
                     #found the end
                     found_path = True
                     step = node.step+1
@@ -64,8 +119,6 @@ def distance(cellA,cellB):
                     possibles.append(neighbor)
                
     return step
-
-
 
 # initialise game and variables
 cells: list[Cell] = []
@@ -93,30 +146,7 @@ for i in range(number_of_cells):
     neigh_3 = inputs[5]
     neigh_4 = inputs[6]
     neigh_5 = inputs[7]
-    # set x and y values. x is distance in 0 direction. y is distance in 1 direction
-    if neigh_0 != -1:
-        cells[neigh_0].x = cells[i].x + 1
-        cells[neigh_0].y = cells[i].y
     
-    if neigh_1 != -1:
-        cells[neigh_1].x = cells[i].x
-        cells[neigh_1].y = cells[i].y + 1
-    
-    if neigh_2 != -1:
-        cells[neigh_2].x = cells[i].x - 1
-        cells[neigh_2].y = cells[i].y + 1
-    
-    if neigh_3 != -1:
-        cells[neigh_3].x = cells[i].x - 1
-        cells[neigh_3].y = cells[i].y
-
-    if neigh_4 != -1:
-        cells[neigh_4].x = cells[i].x 
-        cells[neigh_4].y = cells[i].y -1
-    
-    if neigh_5 != -1:
-        cells[neigh_5].x = cells[i].x + 1
-        cells[neigh_5].y = cells[i].y - 1
     
     cells[i].cell_type = cell_type
     cells[i].resources = initial_resources
@@ -135,11 +165,13 @@ targets = []
 
 # game loop
 while True:
-    print("x and y of 18..."+ str(cells[18].x)+"," + str(cells[18].x), file=sys.stderr, flush=True)
+    
     #game loop initiation
     total_crystals = 0
     total_eggs = 0
     my_total_ants = 0
+    egg_weight = 1
+    crystal_weight = 1
     for i in range(number_of_cells):
         inputs = [int(j) for j in input().split()]
         resources = inputs[0] # the current amount of eggs/crystals on this cell
@@ -156,54 +188,74 @@ while True:
             total_crystals += resources
 
     # WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text>
-    
-    
     actions = []
-    strategy = 1
+    lines = []
+    linked = []
+    total_lines = 0
 
-    if strategy ==1:
-        # if more crystals than eggs go for eggs
-        target_type = 2
-        if total_crystals > total_eggs:
-            target_type = 1
-        if total_crystals < total_eggs:
-            target_type = 2
-        if total_crystals == 0:
-            target_type = 1
-        if total_eggs == 0:
-            target_type = 2
+    # add eggs if within egg_range from base
+    egg_range = 3
+    for b in my_bases:
+        egg_targets = cells_in_order(cells,1)
+        for t in egg_targets:
+            if total_lines >= my_total_ants: break
+            if distance(cells[t[0]],cells[b])<= egg_range:
+                lines.append([t[0],b,egg_weight])
+                linked.append(t[0])
+                total_lines += distance(cells[t[0]],cells[b])*egg_weight
 
-        # go after some crystals
-        targets.append(richest_cell(cells,2))
+    # add crystal targets
+    possible_targets = cells_in_order(cells,2)
+    print("possible targets=" + str(possible_targets), file=sys.stderr, flush=True)
+    lines.append([possible_targets[0][2],possible_targets[0][0],crystal_weight])
+    total_lines += possible_targets[0][1]*crystal_weight
+    print("total lines=" + str(total_lines), file=sys.stderr, flush=True)
+    linked.append(possible_targets[0][0])
+    linked.append(possible_targets[0][2])
+    for n in cells[possible_targets[0][2]].neighbors:
+            if cells[n].cell_type == 1 and cells[n].resources>0:
+                lines.append([n,possible_targets[0][2],crystal_weight])
+                total_lines +=1*egg_weight
 
+    for n in cells[possible_targets[0][0]].neighbors:
+            if cells[n].cell_type == 1 and cells[n].resources>0:
+                lines.append([n,possible_targets[0][0],crystal_weight])
+                total_lines +=1*egg_weight
 
-        if richest_cell(cells,target_type) not in targets:
-            targets.append(richest_cell(cells,target_type))
-
-    if strategy == 2:
-        #start from closest
+    possible_targets.pop(0)
+    
+    for t in possible_targets:
+        
         closest = 100000
-        closest_cell = None
-        for i in cells:
-            if (distance(cells[my_bases[0]],i)< closest) and (i.resources >0):
-                closest_cell = i
-                closest = distance(cells[my_bases[0]],i)
-        targets.append(closest_cell)
+        closest_link = -1
+        for l in linked:
+            d = distance(cells[t[0]],cells[l])
+            if d<closest:
+                closest = d
+                closest_link = l
+        total_lines += closest*crystal_weight
+    
+        
+    # add any adjacent eggs
+        for n in cells[t[0]].neighbors:
+            if total_lines >= my_total_ants: break
+            if cells[n].cell_type == 1 and cells[n].resources>0:
+                lines.append([n,t[0],crystal_weight])
+                total_lines +=1 * crystal_weight
 
-    if strategy == 3:
-        #everything everywhere all at once
-        for i in cells:
-            targets.append(i)
-
-    for i,target in enumerate(targets):
-        if target.resources == 0:
-            targets.pop(i)
-
-    for target in targets:
-            actions.append("LINE "+str(my_bases[0])+" "+str(target.index)+" 1")
+        if total_lines >= my_total_ants: break
+        lines.append([t[0],closest_link,crystal_weight])
+        linked.append(t[0])
+            
+    
 
 
-    # TODO: choose actions to perform and push them into actions
+
+
+# add targets to output
+    for line in lines:
+            actions.append("LINE "+str(line[0])+" "+str(line[1])+" "+str(line[2]))
+
     # To debug: print("Debug messages...", file=sys.stderr, flush=True)
     if len(actions) == 0:
         print('WAIT')
