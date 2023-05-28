@@ -8,14 +8,15 @@
 # set egg range based on ratio of eggs to crystals
 # work out how to minimise time to 51% crystals
 
-
+# once paths established set weights down each path based on
+# egg_weighting
+# enemy activity
 
 import sys
 
 # Python code to sort the tuples using second element
 # of sublist Inplace way to sort using sort()
 def Sort(sub_li):
- 
     # reverse = None (Sorts in Ascending order)
     # key is set to sort using second element of
     # sublist lambda has been used
@@ -39,8 +40,6 @@ class Cell(object):
         self.opp_ants = opp_ants
         self.x = x
         self.y = y
-
-
 
 class path_node():
     def __init__(self,cell : int,parent : int,step : int):
@@ -116,8 +115,7 @@ def distance(cellA,cellB):
                     break
                 if neighbor not in possibles:
                     path.append(path_node(neighbor,node.cell,node.step+1))
-                    possibles.append(neighbor)
-               
+                    possibles.append(neighbor)          
     return step
 
 # initialise game and variables
@@ -132,9 +130,6 @@ for i in range(number_of_cells):
     # create a cell for each cell on the map
     cell: Cell = Cell(index = i)
     cells.append(cell)
-
-cells[0].x = 0
-cells[0].y = 0
 
 for i in range(number_of_cells):
     inputs = [int(j) for j in input().split()]
@@ -172,6 +167,7 @@ while True:
     my_total_ants = 0
     egg_weight = 1
     crystal_weight = 1
+    egg_range = 3
     for i in range(number_of_cells):
         inputs = [int(j) for j in input().split()]
         resources = inputs[0] # the current amount of eggs/crystals on this cell
@@ -194,7 +190,7 @@ while True:
     total_lines = 0
 
     # add eggs if within egg_range from base
-    egg_range = 3
+    
     for b in my_bases:
         egg_targets = cells_in_order(cells,1)
         for t in egg_targets:
