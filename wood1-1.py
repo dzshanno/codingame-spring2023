@@ -35,7 +35,7 @@ def richest_cell(cells,cell_type):
             richest = i
     return richest
 
-def build_map(cells):
+def add_xy(ref: int,dir : int ,result: int):
     pass
             
 
