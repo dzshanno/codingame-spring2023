@@ -10,13 +10,16 @@ class Cell(object):
     my_ants: int
     opp_ants: int
 
-    def __init__(self, index: int, cell_type: int, resources: int, neighbors: list[int], my_ants: int, opp_ants: int):
+    def __init__(self, index: int, cell_type: int, resources: int, neighbors: list[int], my_ants: int, opp_ants: int,x :int =-1, y : int=-1):
         self.index = index
         self.cell_type = cell_type
         self.resources = resources
         self.neighbors = neighbors
         self.my_ants = my_ants
         self.opp_ants = opp_ants
+        self.x = x
+        self.y = y
+
 
 
 class path_node():
