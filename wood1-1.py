@@ -135,6 +135,7 @@ targets = []
 
 # game loop
 while True:
+    print("x and y of 18..."+ str(cells[18].x)+"," + str(cells[18].x), file=sys.stderr, flush=True)
     #game loop initiation
     total_crystals = 0
     total_eggs = 0
