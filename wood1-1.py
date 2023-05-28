@@ -10,7 +10,7 @@ class Cell(object):
     my_ants: int
     opp_ants: int
 
-    def __init__(self, index: int, cell_type: int, resources: int, neighbors: list[int], my_ants: int, opp_ants: int,x :int =-1, y : int=-1):
+    def __init__(self, index: int, cell_type: int = -1, resources: int = 0, neighbors: list[int] = [], my_ants: int = 0, opp_ants: int = 0,x :int =-1, y : int=-1):
         self.index = index
         self.cell_type = cell_type
         self.resources = resources
@@ -35,8 +35,9 @@ def richest_cell(cells,cell_type):
             richest = i
     return richest
 
-def build_map():
+def build_map(cells):
     pass
+            
 
 def distance(cellA,cellB):
     print(cellB.index, file=sys.stderr, flush=True)
@@ -73,6 +74,15 @@ total_eggs = 0
 
 
 number_of_cells = int(input())  # amount of hexagonal cells in this map
+
+for i in range(number_of_cells):
+    # create a cell for each cell on the map
+    cell: Cell = Cell(index = i)
+    cells.append(cell)
+
+cells[0].x = 0
+cells[0].y = 0
+
 for i in range(number_of_cells):
     inputs = [int(j) for j in input().split()]
     cell_type = inputs[0] # 0 for empty, 1 for eggs, 2 for crystal
@@ -83,15 +93,35 @@ for i in range(number_of_cells):
     neigh_3 = inputs[5]
     neigh_4 = inputs[6]
     neigh_5 = inputs[7]
-    cell: Cell = Cell(
-        index = i,
-        cell_type = cell_type,
-        resources = initial_resources,
-        neighbors = list(filter(lambda id: id > -1,[neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5])),
-        my_ants = 0,
-        opp_ants = 0
-    )
-    cells.append(cell)
+    # set x and y values. x is distance in 0 direction. y is distance in 1 direction
+    if neigh_0 != -1:
+        cells[neigh_0].x = cells[i].x + 1
+        cells[neigh_0].y = cells[i].y
+    
+    if neigh_1 != -1:
+        cells[neigh_1].x = cells[i].x
+        cells[neigh_1].y = cells[i].y + 1
+    
+    if neigh_2 != -1:
+        cells[neigh_2].x = cells[i].x - 1
+        cells[neigh_2].y = cells[i].y + 1
+    
+    if neigh_3 != -1:
+        cells[neigh_3].x = cells[i].x - 1
+        cells[neigh_3].y = cells[i].y
+
+    if neigh_4 != -1:
+        cells[neigh_4].x = cells[i].x 
+        cells[neigh_4].y = cells[i].y -1
+    
+    if neigh_5 != -1:
+        cells[neigh_5].x = cells[i].x + 1
+        cells[neigh_5].y = cells[i].y - 1
+    
+    cells[i].cell_type = cell_type
+    cells[i].resources = initial_resources
+    cells[i].neighbors = list(filter(lambda id: id > -1,[neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5]))
+
 number_of_bases = int(input())
 my_bases: list[int] = []
 for i in input().split():
