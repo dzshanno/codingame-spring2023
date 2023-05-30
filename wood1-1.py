@@ -12,6 +12,8 @@
 # egg_weighting
 # enemy activity
 
+# dont target more than 51% of the crystals?
+
 import sys
 
 # Python code to sort the tuples using second element
