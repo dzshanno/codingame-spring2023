@@ -9,10 +9,10 @@
 # work out how to minimise time to 51% crystals
 # count ants - if more than oppo then crystals, else eggs
 
-
-
 import sys
 import time
+import numpy
+
 
 # Python code to sort the tuples using second element
 # of sublist Inplace way to sort using sort()
@@ -61,7 +61,7 @@ class Node():
     def __repr__(self):
         return str(self.index)
 
-def astar(start, end):
+def astar(cell_list,start, end):
     #Returns a list of tuples as a path from the given start to the given end in the given maze
 
     # Create start and end node
@@ -79,8 +79,6 @@ def astar(start, end):
 
     # Loop until you find the end
     while len(open_list) > 0:
-        #print("open_list =: "+str(open_list), file=sys.stderr, flush=True)
-        #print("closed_list =: "+str(closed_list), file=sys.stderr, flush=True)
         # Get the current node
         current_node = open_list[0]
         current_index = 0
@@ -104,7 +102,7 @@ def astar(start, end):
 
         # Generate children
         children = []
-        for n in cells[current_node.index].neighbors:
+        for n in cell_list[current_node.index].neighbors:
             new_node = Node(current_node,n)
             # Append
             children.append(new_node)
@@ -158,20 +156,30 @@ def distance_map():
         for j in range(len(cells)):
             cd.append(index_distance(i,j))
         distances.append(cd)
-        #print(cd, file=sys.stderr, flush=True)
     return distances
 
 #create a cached list of paths between all points
 def path_map():
-    paths = []
-    print(time.process_time() - start, file=sys.stderr, flush=True)
-    for i in range(len(cells)):
-        cp =[]
-        print("in pmap loop "+str(time.process_time() - start), file=sys.stderr, flush=True)
-        for j in range(len(cells)):
-            cp.append(astar(i,j))
-            print("in astar loop "+str(time.process_time() - start), file=sys.stderr, flush=True)
-        paths.append(cp)
+    start = time.process_time()
+    paths = [[[] for i in range(number_of_cells)] for j in range(number_of_cells)]
+    targets = target_cells()
+    lt=len(targets)
+    for i in range(lt):
+        for j in range(lt):
+            if paths[targets[i]][targets[j]] == []:
+                print("start astar:"+str([i,j])+" "+str([targets[i],targets[j]])+" "+str(time.process_time()-start), file=sys.stderr, flush=True)
+                next_path = astar(cells,targets[i],targets[j])
+                path_list = next_path
+                # path_list = [next_path[a:b+1] for a in range(len(next_path)) for b in range(len(next_path)) if a<=b]
+                print("path list:" + str(path_list), file=sys.stderr, flush=True)
+                #for p in path_list:
+                #    if len(p)>1:
+                #        paths[p[0]][p[-1]]=p
+                #        paths[p[-1]][p[0]]=p[::-1]
+                paths[path_list[0]][path_list[-1]] = path_list
+                paths[path_list[-1]][path_list[0]] = path_list[::-1]
+            else:
+                print(" skipped "+str([i,j])+ " "+str([targets[i],targets[j]])+" "+str(paths[targets[i]][targets[j]]), file=sys.stderr, flush=True)
     return paths
     
 def path_strength(source : int):
@@ -185,7 +193,6 @@ def path_strength(source : int):
         end_strength = 0
         found_end = True
     while queue:
-        print("queue =: "+str(queue), file=sys.stderr, flush=True)
         next_cell = queue.pop(0)
         explored.append(next_cell[0])
         for n in cells[next_cell[0]].neighbors:
@@ -195,13 +202,11 @@ def path_strength(source : int):
                     if i[0] == n: duplicate = True
             if (cells[n].my_ants>0) and (n not in explored) and not duplicate:
                 queue.append([n,min(next_cell[1],cells[n].my_ants)])
-                print(str(n)+" my_bases: "+str(my_bases), file=sys.stderr, flush=True)
                 if n in my_bases: 
                     end_strength = queue[-1][1]
                     found_end = True
                 if found_end == True: break
         if found_end == True: break
-    print("queue =: "+str(queue), file=sys.stderr, flush=True)
     return end_strength
 
 def best_path(cellA,cellB):
@@ -232,7 +237,6 @@ def best_path(cellA,cellB):
         current_cell = queue[-1][0]
         path.append(current_cell)
         next_cell = queue[-1][2]
-        print("explored :"+str(explored), file=sys.stderr, flush=True)
         for i in range(queue[-1][1]):
             path.append(next_cell)
             for j in range(len(explored)):
@@ -242,7 +246,6 @@ def best_path(cellA,cellB):
 
 
 def distance(cellA,cellB):
-    #print(cellB.index, file=sys.stderr, flush=True)
     path : list[path_node]=[]
     possibles : list[int]=[]
     n=0
@@ -251,12 +254,10 @@ def distance(cellA,cellB):
     found_path = 0
     while not found_path:
         for node in path:
-            #print(cells[node.cell].neighbors, file=sys.stderr, flush=True)
             if found_path: break
             for neighbor in cells[node.cell].neighbors:
-                #print(neighbor, file=sys.stderr, flush=True)
                 if neighbor == cellB.index:
-                    #print("break at " + str(n), file=sys.stderr, flush=True)
+                    
                     #found the end
                     found_path = True
                     step = node.step+1
@@ -270,7 +271,6 @@ def distance(cellA,cellB):
 
 # return the length of the shortest path between to cells
 def index_distance(cellA: int,cellB: int):
-    #print(cellB.index, file=sys.stderr, flush=True)
     path : list[path_node]=[]
     possibles : list[int]=[]
     n=0
@@ -282,12 +282,12 @@ def index_distance(cellA: int,cellB: int):
         found_path = 1
     while not found_path:
         for node in path:
-            #print(cells[node.cell].neighbors, file=sys.stderr, flush=True)
+         
             if found_path: break
             for neighbor in cells[node.cell].neighbors:
-                #print(neighbor, file=sys.stderr, flush=True)
+            
                 if neighbor == cellB:
-                    #print("break at " + str(n), file=sys.stderr, flush=True)
+                 
                     #found the end
                     found_path = True
                     step = node.step+1
@@ -299,7 +299,6 @@ def index_distance(cellA: int,cellB: int):
     return step
 
 # initialise game and variables
-print("init game", file=sys.stderr, flush=True)
 cells: list[Cell] = []
 total_crystals = 0
 total_eggs = 0
@@ -308,15 +307,12 @@ collected_crystals = 0
 start = time.process_time()
 number_of_cells = int(input())  # amount of hexagonal cells in this map
 
-print(time.process_time() - start, file=sys.stderr, flush=True)
 
 for i in range(number_of_cells):
     # create a cell for each cell on the map
     cell: Cell = Cell(index = i)
     cells.append(cell)
 
-cells[0].x = 0
-cells[0].y = 0
 
 for i in range(number_of_cells):
     inputs = [int(j) for j in input().split()]
@@ -344,15 +340,11 @@ for i in input().split():
     opp_base_index = int(i)
     opp_bases.append(opp_base_index)
 targets = []
-print(time.process_time() - start, file=sys.stderr, flush=True)
 
-dmap = distance_map()
-#pmap = path_map()
-print(time.process_time() - start, file=sys.stderr, flush=True)
-#print(dmap, file=sys.stderr, flush=True)
-print("path 0-->14 : "+str(best_path(0,14)), file=sys.stderr, flush=True)
-print("astar 0-->14 : "+str(astar(0,14)), file=sys.stderr, flush=True)
-print("starting game loop", file=sys.stderr, flush=True)
+
+#dmap = distance_map()
+pmap = path_map()
+print(pmap, file=sys.stderr, flush=True)
 
 # game loop
 while True:
@@ -390,7 +382,6 @@ while True:
     total_lines = 0
     targetted_crystal = 0
 
-    print("adding nearby eggs", file=sys.stderr, flush=True)
     # add eggs if within egg_range from base
     
     for b in my_bases:
@@ -414,7 +405,6 @@ while True:
     
     #list of all possible targets - eggs and crystals
     target_list = target_cells()
-    print("Target list.:"+str(target_list), file=sys.stderr, flush=True)
 
     
     # build lines to the targets based on their distance to the existing lines
@@ -436,16 +426,11 @@ while True:
         total_lines += closest
         if cells[closest_target].cell_type == 2:
             targetted_crystal += cells[closest_target].resources
-        #print("Target size.:"+str(targetted_crystal), file=sys.stderr, flush=True)
+       
         lines.append([closest_target,closest_link,crystal_weight])
         linked.append(closest_target)
         target_list.remove(closest_target)
-        if targetted_crystal / total_crystals > crystal_target_ratio: break
-    #print("Final Target size.:"+str(targetted_crystal), file=sys.stderr, flush=True)
-    
-
-        
-    #print("stregth from cell 27: "+str(path_strength(27)), file=sys.stderr, flush=True)        
+        if targetted_crystal / total_crystals > crystal_target_ratio: break     
 
     for c in cells_in_order(cells,2):
         collected_crystals += path_strength(c[0])
@@ -453,7 +438,7 @@ while True:
 # add targets to output
     beacons =[]
     for line in lines:
-        beacons.extend(astar(line[0],line[1]))
+        beacons.extend(astar(cells,line[0],line[1]))
         print("beacons.:"+str(beacons), file=sys.stderr, flush=True)
     for b in beacons:
         actions.append("BEACON "+str(b)+" 1")
