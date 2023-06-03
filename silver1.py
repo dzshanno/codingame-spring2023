@@ -11,7 +11,10 @@
 
 import sys
 import time
-import numpy
+
+def BFS(cellA,cellB):
+    
+    
 
 
 # Python code to sort the tuples using second element
@@ -154,7 +157,7 @@ def distance_map():
     for i in range(len(cells)):
         cd = []
         for j in range(len(cells)):
-            cd.append(index_distance(i,j))
+            cd.append(distance(i,j))
         distances.append(cd)
     return distances
 
@@ -209,68 +212,9 @@ def path_strength(source : int):
         if found_end == True: break
     return end_strength
 
-def best_path(cellA,cellB):
-    end_found = False
-    path = []
-    queue =[]
-    explored = []
-    # queue includes cell, distance from start, parent and resources travesed
-    queue.append([cellA,0,-1,0])
-    while queue:
-        next_cell = queue.pop(0)
-        explored.append(next_cell)
-        for n in cells[next_cell[0]].neighbors:
-            in_queue = False
-            in_explored = False
-            if len(queue)>0:
-                for i in queue:
-                    if i[0] ==n: in_queue = True
-                for j in explored:
-                    if j[0] == n: in_explored = True
-            if not in_explored and not in_queue:
-                queue.append([n,next_cell[1]+1,next_cell[0],next_cell[3]+cells[n].resources])
-            if n == cellB:
-                end_found = True
-            if end_found == True:break
-        if end_found == True:break
-    if end_found:
-        current_cell = queue[-1][0]
-        path.append(current_cell)
-        next_cell = queue[-1][2]
-        for i in range(queue[-1][1]):
-            path.append(next_cell)
-            for j in range(len(explored)):
-                if explored[j][0] == next_cell:
-                    next_cell = explored[j][2]
-    return path
 
-
-def distance(cellA,cellB):
-    path : list[path_node]=[]
-    possibles : list[int]=[]
-    n=0
-    possibles.append(cellA.index)
-    path.append(path_node(cellA.index,-1,n))
-    found_path = 0
-    while not found_path:
-        for node in path:
-            if found_path: break
-            for neighbor in cells[node.cell].neighbors:
-                if neighbor == cellB.index:
-                    
-                    #found the end
-                    found_path = True
-                    step = node.step+1
-                    break
-                if neighbor not in possibles:
-                    path.append(path_node(neighbor,node.cell,node.step+1))
-                    possibles.append(neighbor)
-               
-    return step
-
-
-# return the length of the shortest path between to cells
-def index_distance(cellA: int,cellB: int):
+# return the length of the shortest path between two cells
+def distance(cellA: int,cellB: int):
     path : list[path_node]=[]
     possibles : list[int]=[]
     n=0
@@ -342,9 +286,12 @@ for i in input().split():
 targets = []
 
 
-#dmap = distance_map()
-pmap = path_map()
-print(pmap, file=sys.stderr, flush=True)
+dmap = distance_map()
+#pmap = path_map()
+#print(pmap, file=sys.stderr, flush=True)
+
+egg_targets = cells_in_order(cells,1)
+crystal_targets = cells_in_order(cells,2)
 
 # game loop
 while True:
